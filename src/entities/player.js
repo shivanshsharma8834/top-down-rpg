@@ -4,7 +4,7 @@ import { DIAGONAL_FACTOR } from "../config.js";
 export function createPlayer(k, pos, speed) {
     const player = k.add([
         k.sprite("player", { anim: "walk-down" }),
-        k.scale(8),
+        // k.scale(8),
         k.anchor("center"),
         k.area({ shape: new k.Rect(k.vec2(0), 5, 10) }),
         k.body(),

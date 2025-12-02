@@ -1,7 +1,11 @@
 import kaplay from "kaplay";
+import { SCALE } from "./config.js";
 // import "kaplay/global"; // uncomment if you want to use without the k. prefix
 import { createPlayer } from "./entities/player.js";
-const k = kaplay();
+const k = kaplay({
+    global: false,
+    debug: true
+});
 
 // k.loadRoot("./"); // A good idea for Itch.io publishing later
 
@@ -29,6 +33,66 @@ k.loadSprite("player", "sprites/player.png", {
     }
 });
 
+k.loadSprite("bean", "sprites/bean.png")
 // Test background color and player creation
 k.setBackground(k.Color.fromHex("#311047"));
-createPlayer(k, k.vec2(k.center()), 700);
+// createPlayer(k, k.vec2(k.center()), 700);
+
+k.scene("main", () => {
+    const wallConfig = {
+        isStatic: true,
+    };
+
+    // Left Wall
+    k.add([
+        k.rect(50, 500), // Width, Height
+        k.pos(200, 200), // X, Y position
+        k.color(100, 100, 100), // Gray color (remove this later)
+        k.area(), // Hitbox
+        k.body(wallConfig), // Physics body
+        "wall", // Tag
+    ]);
+
+    // Top Wall
+    k.add([
+        k.rect(500, 50),
+        k.pos(200, 150),
+        k.color(100, 100, 100),
+        k.area(),
+        k.body(wallConfig),
+        "wall",
+    ]);
+
+    // --- 4. Furniture (Objects) ---
+    // Let's add a "table" using the bean sprite
+    const table = k.add([
+        k.sprite("bean"),
+        k.pos(500, 400),
+        k.scale(SCALE),
+        k.area(), // Default hitbox covers the whole sprite
+        k.body({ isStatic: true }), 
+        k.anchor("center"),
+        "table", // Tag for interaction later
+    ]);
+
+    // --- 5. Player ---
+    // We pass 'SCALE' so the player matches the world size
+    const player = createPlayer(k, k.vec2(k.center()), 300);
+    player.scale = k.vec2(SCALE); // Update player scale to match config
+
+    // --- 6. Depth Handling (Z-Index) ---
+    // This is the magic. It runs every frame.
+    // Objects with a higher Y (lower on screen) get a higher Z (drawn on top).
+    k.onUpdate(() => {
+        // Set Z-index to Y position. 
+        // We use player.pos.y for the player.
+        player.z = player.pos.y;
+        
+        // If you have moving objects, update them too.
+        // Static objects like the table can have their Z set once, 
+        // but setting it here ensures it's always correct.
+        table.z = table.pos.y;
+    });
+});
+
+k.go("main");
