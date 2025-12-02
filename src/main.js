@@ -4,6 +4,8 @@ import { createPlayer } from "./entities/player.js";
 const k = kaplay();
 
 // k.loadRoot("./"); // A good idea for Itch.io publishing later
+
+// Main sprite loading
 k.loadSprite("player", "sprites/player.png", {
     sliceX: 4,
     sliceY: 8,
@@ -27,5 +29,6 @@ k.loadSprite("player", "sprites/player.png", {
     }
 });
 
+// Test background color and player creation
 k.setBackground(k.Color.fromHex("#311047"));
 createPlayer(k, k.vec2(k.center()), 700);
