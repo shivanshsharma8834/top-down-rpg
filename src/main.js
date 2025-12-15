@@ -1,6 +1,7 @@
 import kaplay from "kaplay";
 import { SCALE } from "./config.js";
 import { createPlayer } from "./entities/player.js";
+import { displayDialogue } from "./utils.js"; // Import the new UI logic
 
 const k = kaplay({
     global: false,
@@ -47,10 +48,11 @@ k.setBackground(k.Color.fromHex("#cbcbcb"));
 k.scene("main", () => {
     
     // --- MAP LAYOUT ---
+    // Added 'B' for Bookshelf in the top right
     const mapLayout = [ 
         "###############################################################",
         "#                                                             #",
-        "#             T                                               #",
+        "#                                        B                    #",
         "#                                                             #",
         "#                                                             #",
         "#                                                             #",
@@ -76,7 +78,6 @@ k.scene("main", () => {
         tileHeight: 32,
         pos: k.vec2(100, 100),
         tiles: {
-            // Walls are static geometry, so they can stay in the level!
             "#": () => [
                 k.rect(32, 32),
                 k.color(100, 100, 100),
@@ -85,62 +86,72 @@ k.scene("main", () => {
                 k.anchor("center"),
                 "wall"
             ],
-            // MARKERS: These are placeholders. We will replace them with real objects.
             "T": () => [
-                k.rect(32, 32), // Visual placeholder (optional)
-                k.opacity(0),   // Invisible
-                "table_spawn_marker"
+                k.rect(32, 32), k.opacity(0), "table_spawn_marker"
             ],
             "C": () => [
-                k.rect(32, 32),
-                k.opacity(0),
-                "cat_spawn_marker"
+                k.rect(32, 32), k.opacity(0), "cat_spawn_marker"
+            ],
+            "B": () => [
+                k.rect(32, 32), k.opacity(0), "bookshelf_spawn_marker"
             ]
         }
     };
 
-    // 1. Create the Level (This creates invisible markers)
+    // 1. Create the Level
     const level = k.addLevel(mapLayout, levelConfig);
 
-    // 2. Spawn Real Objects based on Markers
-    // We loop through the markers, spawn real entities at their WORLD position, and destroy the marker.
-
+    // 2. Spawn Real Objects
+    
     // --- Spawn Cats ---
     level.get("cat_spawn_marker").forEach(marker => {
-        // Calculate world position: Level Pos + Marker Local Pos + Center Offset (16,16)
-        const worldPos = level.pos.add(marker.pos).add(16, 16); 
-
         k.add([
             k.sprite("catto", { anim: "idle"}),
-            k.scale(SCALE / 1.7),
-            k.pos(worldPos),
-            k.area({ shape: new k.Rect(k.vec2(-10, -10), 64, 50) }),
+            k.scale(SCALE / 1.5),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area({ shape: new k.Rect(k.vec2(0, 0), 48, 48) }),
             k.body({ isStatic: true }),
             k.anchor("center"),
-            k.z(), // Enable Z-sorting
+            k.z(), 
             "interactable",
             "cat", 
-            { msg: "Meow! Welcome to the portfolio." }
+            { msg: "Meow! I am the guardian of this portfolio." }
         ]);
-        
-        marker.destroy(); // Remove the placeholder
+        marker.destroy();
     });
 
     // --- Spawn Tables ---
     level.get("table_spawn_marker").forEach(marker => {
-        const worldPos = level.pos.add(marker.pos).add(16, 16);
-
         k.add([
             k.sprite("bean"),
             k.scale(SCALE),
-            k.pos(worldPos),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(),
             k.body({ isStatic: true }),
             k.anchor("center"),
-            k.z(), // Enable Z-sorting
-            "table"
+            k.z(), 
+            "interactable", // Added interactable tag to table!
+            "table",
+            { msg: "It's a nice table. Great for coding!" }
         ]);
-        
+        marker.destroy();
+    });
+
+    // --- Spawn Bookshelves ---
+    level.get("bookshelf_spawn_marker").forEach(marker => {
+        k.add([
+            k.sprite("bean"), // Reusing bean for now (you can load a bookshelf sprite later)
+            k.color(139, 69, 19), // Brown tint
+            k.scale(SCALE),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area(),
+            k.body({ isStatic: true }),
+            k.anchor("center"),
+            k.z(),
+            "interactable",
+            "bookshelf",
+            { msg: "These are my projects: 1. RPG Game, 2. E-Commerce Site..." }
+        ]);
         marker.destroy();
     });
 
@@ -149,38 +160,22 @@ k.scene("main", () => {
     player.scale = k.vec2(SCALE);
 
     // --- UI ELEMENTS ---
-    const textbox = document.getElementById("textbox");
-    const content = document.getElementById("content");
     const hint = document.getElementById("hint");
-
-    function closeDialogue() {
-        textbox.style.display = "none";
-        content.innerText = "";
-        player.isInDialogue = false; 
-        k.canvas.focus(); 
-    }
+    let closeCurrentDialogue = null; // Store the cleanup function
 
     // --- MAIN UPDATE LOOP ---
     k.onUpdate(() => {
-        // 1. Update Player Z
+        // 1. Z-Sorting
         player.z = player.pos.y; 
-        
-        // 2. Update Generic Object Z (Tables, etc)
-        ["table", "interactable", "wall"].forEach(tag => {
+        ["table", "interactable", "wall", "bookshelf"].forEach(tag => {
             k.get(tag).forEach(obj => {
                 if (obj.is("cat")) return;
                 obj.z = obj.pos.y;
             });
         });
+        k.get("cat").forEach(cat => cat.z = cat.pos.y + 20);
 
-        // 3. Update Cat Z
-        // Now that the cat is at the Root level (same as player), this comparison works perfectly.
-        // We add +20 offset to make it look like the cat is slightly "in front" if overlapping.
-        k.get("cat").forEach(cat => {
-            cat.z = cat.pos.y + 20; 
-        });
-
-        // 4. Interaction Check
+        // 2. Interaction Check
         let nearbyInteractable = null;
         k.get("interactable").forEach((obj) => {
             if (player.pos.dist(obj.pos) < 100) { 
@@ -188,18 +183,29 @@ k.scene("main", () => {
             }
         });
 
+        // Hint Logic
+        const textbox = document.getElementById("textbox");
         if (nearbyInteractable && textbox.style.display === "none") {
             if (hint) hint.style.display = "block";
         } else {
             if (hint) hint.style.display = "none";
         }
 
+        // Space Key Logic
         if (k.isKeyPressed("space")) {
-            if (textbox.style.display === "block") {
-                closeDialogue();
-            } else if (nearbyInteractable) {
-                textbox.style.display = "block";
-                content.innerText = nearbyInteractable.msg;
+            // Case A: Dialogue is open -> Close it
+            if (player.isInDialogue) {
+                if (closeCurrentDialogue) closeCurrentDialogue();
+                player.isInDialogue = false;
+                k.canvas.focus();
+            } 
+            // Case B: Nearby object -> Open Dialogue
+            else if (nearbyInteractable) {
+                // Call our utility function
+                closeCurrentDialogue = displayDialogue(
+                    nearbyInteractable.msg, 
+                    () => { player.isInDialogue = false; }
+                );
                 player.isInDialogue = true; 
             }
         }
