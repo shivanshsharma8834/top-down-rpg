@@ -62,25 +62,25 @@ k.scene("main", () => {
     // '|' = Vertical Wall
     const mapLayout = [ 
         "---------------------------------------------------------------",
-        "|                                                             |",
-        "|             T                          B                    |",
-        "|                                                             |",
-        "|        L                                                    |",
-        "|       S              T                                      |",
+        "|L                                      B  B  B              L|",
         "|                                                             |",
         "|                                                             |",
-        "|                    C                                        |",
-        "|           P                    G                            |",
+        "|                                       L  S  L               |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|           P   T                                             |",
         "|                                                             |",
         "|                                                             |",
         "|                                              1  2  3        |",
+        "|            G           C                                    |",
         "|                                                             |",
         "|                                                             |",
         "|                                                             |",
         "|                                                             |",
         "|                                                             |",
-        "|                                                             |",
-        "|                                                             |",
+        "|L                                                           L|",
         "---------------------------------------------------------------",
     ];
 
@@ -134,7 +134,7 @@ k.scene("main", () => {
             k.sprite("catto", { anim: "idle"}),
             k.scale(SCALE / 1.5),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
-            k.area({ shape: new k.Rect(k.vec2(-24, -24), 48, 48) }),
+            k.area({ shape: new k.Rect(k.vec2(0, 0), 48, 48) }),
             k.body({ isStatic: true }),
             k.anchor("center"),
             k.z(), 
@@ -149,7 +149,7 @@ k.scene("main", () => {
     level.get("table_spawn_marker").forEach(marker => {
         k.add([
             k.sprite("coffee"),
-            k.scale(SCALE),
+            k.scale(SCALE / 2),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(),
             k.body({ isStatic: true }),
@@ -185,7 +185,7 @@ k.scene("main", () => {
             { 
                 msg: "Visit my GitHub? (Press Space again to open)",
                 isLink: true,
-                url: "https://github.com/shivanshsharma8834"
+                url: "https://github.com/denshaw-09"
             }
         ]);
         marker.destroy();
@@ -199,7 +199,7 @@ k.scene("main", () => {
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
             "interactable", "goldfish",
-            { msg: "Glub glub... I forgot what I was going to say." }
+            { msg: "Glub glub... I forgor what I was going to say." }
         ]);
         marker.destroy();
     });
