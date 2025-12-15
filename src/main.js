@@ -41,27 +41,32 @@ k.loadSprite("catto", "sprites/catto.png", {
     anims: { "idle": { from: 0, to: 3, loop: true, speed: 2 } }
 });
 
+// Social Media Icons (Using 'bean' as placeholder)
+k.loadSprite("github", "sprites/bean.png"); 
+k.loadSprite("twitter", "sprites/bean.png");
+k.loadSprite("linkedin", "sprites/bean.png");
+
+
 k.setBackground(k.Color.fromHex("#cbcbcb"));
 
 k.scene("main", () => {
     
     // --- MAP LAYOUT ---
-    // Added 'P' for PC/Computer
-    // Added 'G' for Goldfish
+    // Added 'L' for Plant (Leaf) decoration
     const mapLayout = [ 
         "###############################################################",
         "#                                                             #",
         "#             T                          B                    #",
         "#                                                             #",
-        "#                                                             #",
-        "#                      T                                      #",
+        "#        L                                                    #",
+        "#       S              T                                      #",
         "#                                                             #",
         "#                                                             #",
         "#                    C                                        #",
         "#           P                    G                            #",
         "#                               T                             #",
         "#                                                             #",
-        "#                                                             #",
+        "#                                              1  2  3        #",
         "#                                                             #",
         "#                                                             #",
         "#                                                             #",
@@ -84,7 +89,12 @@ k.scene("main", () => {
             "C": () => [ k.rect(32, 32), k.opacity(0), "cat_spawn_marker" ],
             "B": () => [ k.rect(32, 32), k.opacity(0), "bookshelf_spawn_marker" ],
             "P": () => [ k.rect(32, 32), k.opacity(0), "pc_spawn_marker" ],
-            "G": () => [ k.rect(32, 32), k.opacity(0), "goldfish_spawn_marker" ]
+            "G": () => [ k.rect(32, 32), k.opacity(0), "goldfish_spawn_marker" ],
+            "S": () => [ k.rect(32, 32), k.opacity(0), "sofa_spawn_marker" ],
+            "L": () => [ k.rect(32, 32), k.opacity(0), "plant_spawn_marker" ], // New Plant Marker
+            "1": () => [ k.rect(32, 32), k.opacity(0), "github_spawn_marker" ],
+            "2": () => [ k.rect(32, 32), k.opacity(0), "twitter_spawn_marker" ],
+            "3": () => [ k.rect(32, 32), k.opacity(0), "linkedin_spawn_marker" ]
         }
     };
 
@@ -168,18 +178,72 @@ k.scene("main", () => {
         marker.destroy();
     });
 
+    // SOFA (Background Furniture)
+    level.get("sofa_spawn_marker").forEach(marker => {
+        k.add([
+            k.sprite("bean"), k.color(34, 139, 34), // Forest Green for Sofa
+            k.scale(SCALE),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area(), 
+            k.body({ isStatic: true }), 
+            k.anchor("center"), 
+            k.z(),
+            "interactable", "sofa",
+            { msg: "A comfy spot to relax and read code." }
+        ]);
+        marker.destroy();
+    });
+
+    // PLANT (Background Decoration)
+    level.get("plant_spawn_marker").forEach(marker => {
+        k.add([
+            k.sprite("bean"), k.color(0, 128, 0), // Green for Plant
+            k.scale(SCALE),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area(), 
+            k.body({ isStatic: true }), 
+            k.anchor("center"), 
+            k.z(),
+            "interactable", "plant",
+            { msg: "It's a healthy plant. Remember to touch grass!" }
+        ]);
+        marker.destroy();
+    });
+
+    // --- SOCIAL MEDIA ORBS (Dynamic Physics) ---
+    function spawnSocialOrb(marker, spriteName, color, url) {
+        k.add([
+            k.sprite(spriteName), 
+            k.color(color), // Tint until you have real icons
+            k.scale(SCALE), // Bigger size
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area({ shape: new k.Rect(k.vec2(0), 16, 16) }), 
+            k.body({ isStatic: false, drag: 5 }), // Dynamic!
+            k.anchor("center"), 
+            k.z(),
+            "social_orb", 
+            "interactable",
+            { 
+                msg: `Open ${spriteName}? (Press Space)`,
+                isLink: true,
+                url: url
+            }
+        ]);
+        marker.destroy();
+    }
+
+    level.get("github_spawn_marker").forEach(m => spawnSocialOrb(m, "github", k.BLACK, "https://github.com/shivanshsharma8834"));
+    level.get("twitter_spawn_marker").forEach(m => spawnSocialOrb(m, "twitter", k.BLUE, "https://twitter.com"));
+    level.get("linkedin_spawn_marker").forEach(m => spawnSocialOrb(m, "linkedin", k.CYAN, "https://linkedin.com"));
+
+
     const player = createPlayer(k, k.vec2(k.center()), 300);
     player.scale = k.vec2(SCALE);
 
     // --- CAMERA SETUP ---
-    // 1. Zoom in so the pixel art looks good
     k.camScale(1.5);
 
     // 2. Calculate Map Bounds (for Camera Locking)
-    // Width = columns * tileWidth * camScale
-    // Height = rows * tileHeight * camScale
-    // Note: We use 32 * 1.5 (camScale) roughly to estimate, 
-    // but Kaplay camera logic works in World Units, so just tileWidth is enough.
     const mapWidth = mapLayout[0].length * 32;
     const mapHeight = mapLayout.length * 32;
 
@@ -189,18 +253,13 @@ k.scene("main", () => {
 
     k.onUpdate(() => {
         // --- 1. CAMERA LOCK ---
-        // Clamp the camera position so it never shows the black void outside the walls
-        // We use k.camPos().lerp for smoothness, but clamp the result.
-        
         const camX = k.clamp(player.pos.x, 100 + (k.width() / 2) / 1.5, 100 + mapWidth - (k.width() / 2) / 1.5);
         const camY = k.clamp(player.pos.y, 100 + (k.height() / 2) / 1.5, 100 + mapHeight - (k.height() / 2) / 1.5);
-        
-        // Smoothly move camera to the clamped position
-        k.camPos(k.camPos().lerp(k.vec2(camX, camY), 0.1));
+        k.camPos(k.camPos().lerp(k.vec2(camX, camY), 0.001));
 
         // --- 2. DEPTH SORTING ---
         player.z = player.pos.y; 
-        ["table", "interactable", "wall", "bookshelf", "pc", "goldfish"].forEach(tag => {
+        ["table", "interactable", "wall", "bookshelf", "pc", "goldfish", "sofa", "plant", "social_orb"].forEach(tag => {
             k.get(tag).forEach(obj => {
                 if (obj.is("cat")) return;
                 obj.z = obj.pos.y;
@@ -223,7 +282,6 @@ k.scene("main", () => {
         if (k.isKeyPressed("space")) {
             // Case A: Close Dialogue (and handle Link opening)
             if (player.isInDialogue) {
-                // If it was a link object, open the window now
                 if (player.currentInteractable?.isLink) {
                     window.open(player.currentInteractable.url, "_blank");
                 }
