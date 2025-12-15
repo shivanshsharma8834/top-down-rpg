@@ -52,29 +52,30 @@ k.setBackground(k.Color.fromHex("#cbcbcb"));
 k.scene("main", () => {
     
     // --- MAP LAYOUT ---
-    // Added 'L' for Plant (Leaf) decoration
+    // '-' = Horizontal Wall
+    // '|' = Vertical Wall
     const mapLayout = [ 
-        "###############################################################",
-        "#                                                             #",
-        "#             T                          B                    #",
-        "#                                                             #",
-        "#        L                                                    #",
-        "#       S              T                                      #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                    C                                        #",
-        "#           P                    G                            #",
-        "#                               T                             #",
-        "#                                                             #",
-        "#                                              1  2  3        #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                                                             #",
-        "#                                                             #",
-        "###############################################################",
+        "---------------------------------------------------------------",
+        "|                                                             |",
+        "|             T                          B                    |",
+        "|                                                             |",
+        "|        L                                                    |",
+        "|       S              T                                      |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                    C                                        |",
+        "|           P                    G                            |",
+        "|                               T                             |",
+        "|                                                             |",
+        "|                                              1  2  3        |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
+        "---------------------------------------------------------------",
     ];
 
     const levelConfig = { 
@@ -82,6 +83,25 @@ k.scene("main", () => {
         tileHeight: 32,
         pos: k.vec2(100, 100),
         tiles: {
+            // Horizontal Wall (Top/Bottom)
+            "-": () => [
+                k.rect(32, 32), 
+                k.color(80, 80, 80), // Darker Grey for Horizontal
+                k.area(), 
+                k.body({ isStatic: true }), 
+                k.anchor("center"), 
+                "wall"
+            ],
+            // Vertical Wall (Sides)
+            "|": () => [
+                k.rect(32, 32), 
+                k.color(120, 120, 120), // Lighter Grey for Vertical
+                k.area(), 
+                k.body({ isStatic: true }), 
+                k.anchor("center"), 
+                "wall"
+            ],
+            // Legacy '#' Block just in case
             "#": () => [
                 k.rect(32, 32), k.color(100, 100, 100), k.area(), k.body({ isStatic: true }), k.anchor("center"), "wall"
             ],
@@ -91,7 +111,7 @@ k.scene("main", () => {
             "P": () => [ k.rect(32, 32), k.opacity(0), "pc_spawn_marker" ],
             "G": () => [ k.rect(32, 32), k.opacity(0), "goldfish_spawn_marker" ],
             "S": () => [ k.rect(32, 32), k.opacity(0), "sofa_spawn_marker" ],
-            "L": () => [ k.rect(32, 32), k.opacity(0), "plant_spawn_marker" ], // New Plant Marker
+            "L": () => [ k.rect(32, 32), k.opacity(0), "plant_spawn_marker" ], 
             "1": () => [ k.rect(32, 32), k.opacity(0), "github_spawn_marker" ],
             "2": () => [ k.rect(32, 32), k.opacity(0), "twitter_spawn_marker" ],
             "3": () => [ k.rect(32, 32), k.opacity(0), "linkedin_spawn_marker" ]
