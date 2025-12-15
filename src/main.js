@@ -10,7 +10,7 @@ const k = kaplay({
 // k.loadRoot("./"); // A good idea for Itch.io publishing later
 
 // Main sprite loading
-k.loadSprite("player", "sprites/player.png", {
+k.loadSprite("player", "sprites/shreya.png", {
     sliceX: 4,
     sliceY: 8,
     anims: {
