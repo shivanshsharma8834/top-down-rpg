@@ -195,7 +195,7 @@ k.scene("main", () => {
     level.get("goldfish_spawn_marker").forEach(marker => {
         k.add([
             k.sprite("goldfish"), // Orange tint for Goldfish
-            k.scale(SCALE),
+            k.scale(SCALE / 1.5),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
             "interactable", "goldfish",
