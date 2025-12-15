@@ -260,9 +260,9 @@ k.scene("main", () => {
         marker.destroy();
     }
 
-    level.get("github_spawn_marker").forEach(m => spawnSocialOrb(m, "github", k.WHITE,"https://github.com/shivanshsharma8834"));
-    level.get("twitter_spawn_marker").forEach(m => spawnSocialOrb(m, "twitter", k.WHITE, "https://twitter.com"));
-    level.get("linkedin_spawn_marker").forEach(m => spawnSocialOrb(m, "linkedin", k.WHITE, "https://linkedin.com"));
+    level.get("github_spawn_marker").forEach(m => spawnSocialOrb(m, "github", k.WHITE,"https://github.com/denshaw-09"));
+    level.get("twitter_spawn_marker").forEach(m => spawnSocialOrb(m, "twitter", k.WHITE, "https://x.com/felisonhelison"));
+    level.get("linkedin_spawn_marker").forEach(m => spawnSocialOrb(m, "linkedin", k.WHITE, "https://www.linkedin.com/in/shreya-8970-/"));
 
 
     const player = createPlayer(k, k.vec2(k.center()), 300);
