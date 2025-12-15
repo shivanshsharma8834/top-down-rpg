@@ -1,16 +1,16 @@
 import kaplay from "kaplay";
 import { SCALE } from "./config.js";
-// import "kaplay/global"; // uncomment if you want to use without the k. prefix
 import { createPlayer } from "./entities/player.js";
+
 const k = kaplay({
     global: false,
-    debug: true
+    debug: true,
+    background: [30, 30, 40],
+    canvas: document.getElementById("game-canvas"),
 });
 
-// k.loadRoot("./"); // A good idea for Itch.io publishing later
-
-// Main sprite loading
-k.loadSprite("player", "sprites/shreya.png", {
+// --- LOAD ASSETS ---
+k.loadSprite("player", "sprites/shreya_3.png", {
     sliceX: 4,
     sliceY: 8,
     anims: {
@@ -33,65 +33,176 @@ k.loadSprite("player", "sprites/shreya.png", {
     }
 });
 
-k.loadSprite("bean", "sprites/bean.png")
-// Test background color and player creation
-k.setBackground(k.Color.fromHex("#311047"));
-// createPlayer(k, k.vec2(k.center()), 700);
+k.loadSprite("bean", "sprites/bean.png");
+k.loadSprite("catto", "sprites/catto.png", {
+    sliceX: 4,
+    sliceY: 8,
+    anims: {
+        "idle": { from: 0, to: 3, loop: true, speed: 2 },
+    }
+});
+
+k.setBackground(k.Color.fromHex("#cbcbcb"));
 
 k.scene("main", () => {
-    const wallConfig = {
-        isStatic: true,
+    
+    // --- MAP LAYOUT ---
+    const mapLayout = [ 
+        "###############################################################",
+        "#                                                             #",
+        "#             T                                               #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                    C                                        #",
+        "#                                                             #",
+        "#                               T                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "#                                                             #",
+        "###############################################################",
+    ];
+
+    const levelConfig = { 
+        tileWidth: 32, 
+        tileHeight: 32,
+        pos: k.vec2(100, 100),
+        tiles: {
+            // Walls are static geometry, so they can stay in the level!
+            "#": () => [
+                k.rect(32, 32),
+                k.color(100, 100, 100),
+                k.area(),
+                k.body({ isStatic: true }),
+                k.anchor("center"),
+                "wall"
+            ],
+            // MARKERS: These are placeholders. We will replace them with real objects.
+            "T": () => [
+                k.rect(32, 32), // Visual placeholder (optional)
+                k.opacity(0),   // Invisible
+                "table_spawn_marker"
+            ],
+            "C": () => [
+                k.rect(32, 32),
+                k.opacity(0),
+                "cat_spawn_marker"
+            ]
+        }
     };
 
-    // Left Wall
-    k.add([
-        k.rect(50, 500), // Width, Height
-        k.pos(200, 200), // X, Y position
-        k.color(100, 100, 100), // Gray color (remove this later)
-        k.area(), // Hitbox
-        k.body(wallConfig), // Physics body
-        "wall", // Tag
-    ]);
+    // 1. Create the Level (This creates invisible markers)
+    const level = k.addLevel(mapLayout, levelConfig);
 
-    // Top Wall
-    k.add([
-        k.rect(500, 50),
-        k.pos(200, 150),
-        k.color(100, 100, 100),
-        k.area(),
-        k.body(wallConfig),
-        "wall",
-    ]);
+    // 2. Spawn Real Objects based on Markers
+    // We loop through the markers, spawn real entities at their WORLD position, and destroy the marker.
 
-    // --- 4. Furniture (Objects) ---
-    // Let's add a "table" using the bean sprite
-    const table = k.add([
-        k.sprite("bean"),
-        k.pos(500, 400),
-        k.scale(SCALE),
-        k.area(), // Default hitbox covers the whole sprite
-        k.body({ isStatic: true }), 
-        k.anchor("center"),
-        "table", // Tag for interaction later
-    ]);
+    // --- Spawn Cats ---
+    level.get("cat_spawn_marker").forEach(marker => {
+        // Calculate world position: Level Pos + Marker Local Pos + Center Offset (16,16)
+        const worldPos = level.pos.add(marker.pos).add(16, 16); 
 
-    // --- 5. Player ---
-    // We pass 'SCALE' so the player matches the world size
-    const player = createPlayer(k, k.vec2(k.center()), 300);
-    player.scale = k.vec2(SCALE); // Update player scale to match config
-
-    // --- 6. Depth Handling (Z-Index) ---
-    // This is the magic. It runs every frame.
-    // Objects with a higher Y (lower on screen) get a higher Z (drawn on top).
-    k.onUpdate(() => {
-        // Set Z-index to Y position. 
-        // We use player.pos.y for the player.
-        player.z = player.pos.y;
+        k.add([
+            k.sprite("catto", { anim: "idle"}),
+            k.scale(SCALE / 1.7),
+            k.pos(worldPos),
+            k.area({ shape: new k.Rect(k.vec2(-10, -10), 64, 50) }),
+            k.body({ isStatic: true }),
+            k.anchor("center"),
+            k.z(), // Enable Z-sorting
+            "interactable",
+            "cat", 
+            { msg: "Meow! Welcome to the portfolio." }
+        ]);
         
-        // If you have moving objects, update them too.
-        // Static objects like the table can have their Z set once, 
-        // but setting it here ensures it's always correct.
-        table.z = table.pos.y;
+        marker.destroy(); // Remove the placeholder
+    });
+
+    // --- Spawn Tables ---
+    level.get("table_spawn_marker").forEach(marker => {
+        const worldPos = level.pos.add(marker.pos).add(16, 16);
+
+        k.add([
+            k.sprite("bean"),
+            k.scale(SCALE),
+            k.pos(worldPos),
+            k.area(),
+            k.body({ isStatic: true }),
+            k.anchor("center"),
+            k.z(), // Enable Z-sorting
+            "table"
+        ]);
+        
+        marker.destroy();
+    });
+
+    // --- SPAWN PLAYER ---
+    const player = createPlayer(k, k.vec2(k.center()), 300);
+    player.scale = k.vec2(SCALE);
+
+    // --- UI ELEMENTS ---
+    const textbox = document.getElementById("textbox");
+    const content = document.getElementById("content");
+    const hint = document.getElementById("hint");
+
+    function closeDialogue() {
+        textbox.style.display = "none";
+        content.innerText = "";
+        player.isInDialogue = false; 
+        k.canvas.focus(); 
+    }
+
+    // --- MAIN UPDATE LOOP ---
+    k.onUpdate(() => {
+        // 1. Update Player Z
+        player.z = player.pos.y; 
+        
+        // 2. Update Generic Object Z (Tables, etc)
+        ["table", "interactable", "wall"].forEach(tag => {
+            k.get(tag).forEach(obj => {
+                if (obj.is("cat")) return;
+                obj.z = obj.pos.y;
+            });
+        });
+
+        // 3. Update Cat Z
+        // Now that the cat is at the Root level (same as player), this comparison works perfectly.
+        // We add +20 offset to make it look like the cat is slightly "in front" if overlapping.
+        k.get("cat").forEach(cat => {
+            cat.z = cat.pos.y + 20; 
+        });
+
+        // 4. Interaction Check
+        let nearbyInteractable = null;
+        k.get("interactable").forEach((obj) => {
+            if (player.pos.dist(obj.pos) < 100) { 
+                nearbyInteractable = obj;
+            }
+        });
+
+        if (nearbyInteractable && textbox.style.display === "none") {
+            if (hint) hint.style.display = "block";
+        } else {
+            if (hint) hint.style.display = "none";
+        }
+
+        if (k.isKeyPressed("space")) {
+            if (textbox.style.display === "block") {
+                closeDialogue();
+            } else if (nearbyInteractable) {
+                textbox.style.display = "block";
+                content.innerText = nearbyInteractable.msg;
+                player.isInDialogue = true; 
+            }
+        }
     });
 });
 

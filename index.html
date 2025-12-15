@@ -1,9 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>myGame</title>
+    <title>myGame</title>
+    <style>
+        body { 
+            overflow: hidden; 
+            margin: 0; 
+            background: #1e1e28; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Explicit canvas styling to ensure it takes focus */
+        canvas {
+            outline: none;
+            display: block;
+        }
+        
+        /* The Dialogue Box */
+        #textbox {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            background: white;
+            border: 4px solid black;
+            border-radius: 8px;
+            padding: 20px;
+            display: none; /* Hidden by default */
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            z-index: 10;
+            pointer-events: auto; /* Allow clicking text */
+        }
+        
+        #content {
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        /* "Press Space" Hint */
+        #hint {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: black;
+            font-family: sans-serif;
+            font-weight: bold;
+            font-size: 18px;
+            display: none;
+            text-shadow: 2px 2px 0 #000;
+            pointer-events: none;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body style="overflow:hidden">
-<script src="src/main.js" type="module"></script>
+<body>
+    <div id="hint">Press Space to Interact</div>
+    
+    <div id="textbox">
+        <p id="content"></p>
+    </div>
+
+    <!-- Kaplay will attach to this canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <script src="src/main.js" type="module"></script>
+    
+    <script>
+        // Force focus on canvas when clicking anywhere
+        window.addEventListener("click", () => {
+            const canvas = document.getElementById("game-canvas");
+            if(canvas) canvas.focus();
+        });
+    </script>
 </body>
 </html>
