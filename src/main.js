@@ -42,9 +42,15 @@ k.loadSprite("catto", "sprites/catto.png", {
 });
 
 // Social Media Icons (Using 'bean' as placeholder)
-k.loadSprite("github", "sprites/bean.png"); 
-k.loadSprite("twitter", "sprites/bean.png");
-k.loadSprite("linkedin", "sprites/bean.png");
+k.loadSprite("github", "sprites/github.png"); 
+k.loadSprite("twitter", "sprites/twitter.png");
+k.loadSprite("linkedin", "sprites/linkedin.png");
+k.loadSprite("goldfish", "sprites/goldfish.png");
+k.loadSprite("PC", "sprites/pc.png");
+k.loadSprite("plant", "sprites/plant.png");
+k.loadSprite("coffee", "sprites/coffee.png");
+k.loadSprite("bookshelf", "sprites/bookshelf.png");
+k.loadSprite("sofa", "sprites/sofa.png");
 
 
 k.setBackground(k.Color.fromHex("#cbcbcb"));
@@ -65,7 +71,7 @@ k.scene("main", () => {
         "|                                                             |",
         "|                    C                                        |",
         "|           P                    G                            |",
-        "|                               T                             |",
+        "|                                                             |",
         "|                                                             |",
         "|                                              1  2  3        |",
         "|                                                             |",
@@ -142,7 +148,7 @@ k.scene("main", () => {
     // TABLES
     level.get("table_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"),
+            k.sprite("coffee"),
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(),
@@ -150,7 +156,7 @@ k.scene("main", () => {
             k.anchor("center"),
             k.z(), 
             "interactable", "table",
-            { msg: "It's a nice table. Great for coding!" }
+            { msg: "I don't need sleep. Coffee keeps me going!" }
         ]);
         marker.destroy();
     });
@@ -158,7 +164,7 @@ k.scene("main", () => {
     // BOOKSHELVES
     level.get("bookshelf_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), k.color(139, 69, 19), 
+            k.sprite("bookshelf"), 
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
@@ -171,7 +177,7 @@ k.scene("main", () => {
     // PC (LINK EXAMPLE)
     level.get("pc_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), k.color(0, 0, 255), // Blue tint for PC
+            k.sprite("PC"), // Blue tint for PC
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
@@ -188,7 +194,7 @@ k.scene("main", () => {
     // GOLDFISH
     level.get("goldfish_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), k.color(255, 165, 0), // Orange tint for Goldfish
+            k.sprite("goldfish"), // Orange tint for Goldfish
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
@@ -201,7 +207,7 @@ k.scene("main", () => {
     // SOFA (Background Furniture)
     level.get("sofa_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), k.color(34, 139, 34), // Forest Green for Sofa
+            k.sprite("sofa"), // Forest Green for Sofa
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), 
@@ -217,7 +223,7 @@ k.scene("main", () => {
     // PLANT (Background Decoration)
     level.get("plant_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), k.color(0, 128, 0), // Green for Plant
+            k.sprite("plant"),
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), 
@@ -252,9 +258,9 @@ k.scene("main", () => {
         marker.destroy();
     }
 
-    level.get("github_spawn_marker").forEach(m => spawnSocialOrb(m, "github", k.BLACK, "https://github.com/shivanshsharma8834"));
-    level.get("twitter_spawn_marker").forEach(m => spawnSocialOrb(m, "twitter", k.BLUE, "https://twitter.com"));
-    level.get("linkedin_spawn_marker").forEach(m => spawnSocialOrb(m, "linkedin", k.CYAN, "https://linkedin.com"));
+    level.get("github_spawn_marker").forEach(m => spawnSocialOrb(m, "github", k.WHITE,"https://github.com/shivanshsharma8834"));
+    level.get("twitter_spawn_marker").forEach(m => spawnSocialOrb(m, "twitter", k.WHITE, "https://twitter.com"));
+    level.get("linkedin_spawn_marker").forEach(m => spawnSocialOrb(m, "linkedin", k.WHITE, "https://linkedin.com"));
 
 
     const player = createPlayer(k, k.vec2(k.center()), 300);
