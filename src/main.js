@@ -65,6 +65,8 @@ k.scene("main", () => {
         "|L                                      B  B  B              L|",
         "|                                                             |",
         "|                                                             |",
+        "|                                                             |",
+        "|                                                             |",
         "|                                       L  S  L               |",
         "|                                                             |",
         "|                                                             |",
@@ -140,7 +142,7 @@ k.scene("main", () => {
             k.z(), 
             "interactable",
             "cat", 
-            { msg: "Meow! I am the guardian of this portfolio." }
+            { msg: "Meow! Meow! I am the guardian of this portfolio." }
         ]);
         marker.destroy();
     });
@@ -169,7 +171,7 @@ k.scene("main", () => {
             k.pos(level.pos.add(marker.pos).add(16, 16)),
             k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
             "interactable", "bookshelf",
-            { msg: "My Projects: 1. RPG Game, 2. E-Commerce Site..." }
+            { msg: "Lets see, Kafka on the Shore, Should finish reading it soon." }
         ]);
         marker.destroy();
     });
