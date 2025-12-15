@@ -1,7 +1,7 @@
 import kaplay from "kaplay";
 import { SCALE } from "./config.js";
 import { createPlayer } from "./entities/player.js";
-import { displayDialogue } from "./utils.js"; // Import the new UI logic
+import { displayDialogue } from "./utils.js";
 
 const k = kaplay({
     global: false,
@@ -38,9 +38,7 @@ k.loadSprite("bean", "sprites/bean.png");
 k.loadSprite("catto", "sprites/catto.png", {
     sliceX: 4,
     sliceY: 8,
-    anims: {
-        "idle": { from: 0, to: 3, loop: true, speed: 2 },
-    }
+    anims: { "idle": { from: 0, to: 3, loop: true, speed: 2 } }
 });
 
 k.setBackground(k.Color.fromHex("#cbcbcb"));
@@ -48,18 +46,19 @@ k.setBackground(k.Color.fromHex("#cbcbcb"));
 k.scene("main", () => {
     
     // --- MAP LAYOUT ---
-    // Added 'B' for Bookshelf in the top right
+    // Added 'P' for PC/Computer
+    // Added 'G' for Goldfish
     const mapLayout = [ 
         "###############################################################",
         "#                                                             #",
-        "#                                        B                    #",
+        "#             T                          B                    #",
         "#                                                             #",
         "#                                                             #",
-        "#                                                             #",
+        "#                      T                                      #",
         "#                                                             #",
         "#                                                             #",
         "#                    C                                        #",
-        "#                                                             #",
+        "#           P                    G                            #",
         "#                               T                             #",
         "#                                                             #",
         "#                                                             #",
@@ -79,37 +78,27 @@ k.scene("main", () => {
         pos: k.vec2(100, 100),
         tiles: {
             "#": () => [
-                k.rect(32, 32),
-                k.color(100, 100, 100),
-                k.area(),
-                k.body({ isStatic: true }),
-                k.anchor("center"),
-                "wall"
+                k.rect(32, 32), k.color(100, 100, 100), k.area(), k.body({ isStatic: true }), k.anchor("center"), "wall"
             ],
-            "T": () => [
-                k.rect(32, 32), k.opacity(0), "table_spawn_marker"
-            ],
-            "C": () => [
-                k.rect(32, 32), k.opacity(0), "cat_spawn_marker"
-            ],
-            "B": () => [
-                k.rect(32, 32), k.opacity(0), "bookshelf_spawn_marker"
-            ]
+            "T": () => [ k.rect(32, 32), k.opacity(0), "table_spawn_marker" ],
+            "C": () => [ k.rect(32, 32), k.opacity(0), "cat_spawn_marker" ],
+            "B": () => [ k.rect(32, 32), k.opacity(0), "bookshelf_spawn_marker" ],
+            "P": () => [ k.rect(32, 32), k.opacity(0), "pc_spawn_marker" ],
+            "G": () => [ k.rect(32, 32), k.opacity(0), "goldfish_spawn_marker" ]
         }
     };
 
-    // 1. Create the Level
     const level = k.addLevel(mapLayout, levelConfig);
 
-    // 2. Spawn Real Objects
+    // --- SPAWN OBJECTS ---
     
-    // --- Spawn Cats ---
+    // CAT
     level.get("cat_spawn_marker").forEach(marker => {
         k.add([
             k.sprite("catto", { anim: "idle"}),
             k.scale(SCALE / 1.5),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
-            k.area({ shape: new k.Rect(k.vec2(0, 0), 48, 48) }),
+            k.area({ shape: new k.Rect(k.vec2(-24, -24), 48, 48) }),
             k.body({ isStatic: true }),
             k.anchor("center"),
             k.z(), 
@@ -120,7 +109,7 @@ k.scene("main", () => {
         marker.destroy();
     });
 
-    // --- Spawn Tables ---
+    // TABLES
     level.get("table_spawn_marker").forEach(marker => {
         k.add([
             k.sprite("bean"),
@@ -130,44 +119,88 @@ k.scene("main", () => {
             k.body({ isStatic: true }),
             k.anchor("center"),
             k.z(), 
-            "interactable", // Added interactable tag to table!
-            "table",
+            "interactable", "table",
             { msg: "It's a nice table. Great for coding!" }
         ]);
         marker.destroy();
     });
 
-    // --- Spawn Bookshelves ---
+    // BOOKSHELVES
     level.get("bookshelf_spawn_marker").forEach(marker => {
         k.add([
-            k.sprite("bean"), // Reusing bean for now (you can load a bookshelf sprite later)
-            k.color(139, 69, 19), // Brown tint
+            k.sprite("bean"), k.color(139, 69, 19), 
             k.scale(SCALE),
             k.pos(level.pos.add(marker.pos).add(16, 16)),
-            k.area(),
-            k.body({ isStatic: true }),
-            k.anchor("center"),
-            k.z(),
-            "interactable",
-            "bookshelf",
-            { msg: "These are my projects: 1. RPG Game, 2. E-Commerce Site..." }
+            k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
+            "interactable", "bookshelf",
+            { msg: "My Projects: 1. RPG Game, 2. E-Commerce Site..." }
         ]);
         marker.destroy();
     });
 
-    // --- SPAWN PLAYER ---
+    // PC (LINK EXAMPLE)
+    level.get("pc_spawn_marker").forEach(marker => {
+        k.add([
+            k.sprite("bean"), k.color(0, 0, 255), // Blue tint for PC
+            k.scale(SCALE),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
+            "interactable", "pc",
+            { 
+                msg: "Visit my GitHub? (Press Space again to open)",
+                isLink: true,
+                url: "https://github.com/shivanshsharma8834"
+            }
+        ]);
+        marker.destroy();
+    });
+
+    // GOLDFISH
+    level.get("goldfish_spawn_marker").forEach(marker => {
+        k.add([
+            k.sprite("bean"), k.color(255, 165, 0), // Orange tint for Goldfish
+            k.scale(SCALE),
+            k.pos(level.pos.add(marker.pos).add(16, 16)),
+            k.area(), k.body({ isStatic: true }), k.anchor("center"), k.z(),
+            "interactable", "goldfish",
+            { msg: "Glub glub... I forgot what I was going to say." }
+        ]);
+        marker.destroy();
+    });
+
     const player = createPlayer(k, k.vec2(k.center()), 300);
     player.scale = k.vec2(SCALE);
 
-    // --- UI ELEMENTS ---
-    const hint = document.getElementById("hint");
-    let closeCurrentDialogue = null; // Store the cleanup function
+    // --- CAMERA SETUP ---
+    // 1. Zoom in so the pixel art looks good
+    k.camScale(1.5);
 
-    // --- MAIN UPDATE LOOP ---
+    // 2. Calculate Map Bounds (for Camera Locking)
+    // Width = columns * tileWidth * camScale
+    // Height = rows * tileHeight * camScale
+    // Note: We use 32 * 1.5 (camScale) roughly to estimate, 
+    // but Kaplay camera logic works in World Units, so just tileWidth is enough.
+    const mapWidth = mapLayout[0].length * 32;
+    const mapHeight = mapLayout.length * 32;
+
+    const hint = document.getElementById("hint");
+    const textbox = document.getElementById("textbox");
+    let closeCurrentDialogue = null; 
+
     k.onUpdate(() => {
-        // 1. Z-Sorting
+        // --- 1. CAMERA LOCK ---
+        // Clamp the camera position so it never shows the black void outside the walls
+        // We use k.camPos().lerp for smoothness, but clamp the result.
+        
+        const camX = k.clamp(player.pos.x, 100 + (k.width() / 2) / 1.5, 100 + mapWidth - (k.width() / 2) / 1.5);
+        const camY = k.clamp(player.pos.y, 100 + (k.height() / 2) / 1.5, 100 + mapHeight - (k.height() / 2) / 1.5);
+        
+        // Smoothly move camera to the clamped position
+        k.camPos(k.camPos().lerp(k.vec2(camX, camY), 0.1));
+
+        // --- 2. DEPTH SORTING ---
         player.z = player.pos.y; 
-        ["table", "interactable", "wall", "bookshelf"].forEach(tag => {
+        ["table", "interactable", "wall", "bookshelf", "pc", "goldfish"].forEach(tag => {
             k.get(tag).forEach(obj => {
                 if (obj.is("cat")) return;
                 obj.z = obj.pos.y;
@@ -175,38 +208,39 @@ k.scene("main", () => {
         });
         k.get("cat").forEach(cat => cat.z = cat.pos.y + 20);
 
-        // 2. Interaction Check
+        // --- 3. INTERACTION ---
         let nearbyInteractable = null;
         k.get("interactable").forEach((obj) => {
-            if (player.pos.dist(obj.pos) < 100) { 
-                nearbyInteractable = obj;
-            }
+            if (player.pos.dist(obj.pos) < 100) nearbyInteractable = obj;
         });
 
-        // Hint Logic
-        const textbox = document.getElementById("textbox");
         if (nearbyInteractable && textbox.style.display === "none") {
-            if (hint) hint.style.display = "block";
+            hint.style.display = "block";
         } else {
-            if (hint) hint.style.display = "none";
+            hint.style.display = "none";
         }
 
-        // Space Key Logic
         if (k.isKeyPressed("space")) {
-            // Case A: Dialogue is open -> Close it
+            // Case A: Close Dialogue (and handle Link opening)
             if (player.isInDialogue) {
+                // If it was a link object, open the window now
+                if (player.currentInteractable?.isLink) {
+                    window.open(player.currentInteractable.url, "_blank");
+                }
+                
                 if (closeCurrentDialogue) closeCurrentDialogue();
                 player.isInDialogue = false;
+                player.currentInteractable = null;
                 k.canvas.focus();
             } 
-            // Case B: Nearby object -> Open Dialogue
+            // Case B: Open Dialogue
             else if (nearbyInteractable) {
-                // Call our utility function
                 closeCurrentDialogue = displayDialogue(
                     nearbyInteractable.msg, 
                     () => { player.isInDialogue = false; }
                 );
                 player.isInDialogue = true; 
+                player.currentInteractable = nearbyInteractable; // Store reference
             }
         }
     });
